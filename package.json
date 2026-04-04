@@ -1,21 +1,19 @@
 {
   "name": "geta-ai",
   "private": true,
-  "packageManager": "pnpm@10.18.2",
+  "packageManager": "bun@1.3.3",
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
-    "db:generate": "turbo run db:generate",
-    "db:push": "turbo run db:push",
-    "db:migrate": "turbo run db:migrate"
+    "api:dev": "cd apps/api && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 4000",
+    "api:start": "cd apps/api && uv run uvicorn app.main:app --host 0.0.0.0 --port 4000",
+    "api:db:migrate": "cd apps/api && uv run alembic upgrade head"
   },
   "devDependencies": {
     "turbo": "^2.0.0",
     "typescript": "^5.4.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": ["@prisma/engines", "prisma", "esbuild"]
   }
 }

@@ -11,6 +11,7 @@ coverage/
 .vercel/
 __pycache__/
 *.pyc
+apps/api/.venv/
 ingest/data/
 ingest/.env
 ingest/.venv/
@@ -20,4 +21,3 @@ qdrant_storage/
 AGENT_PROMPT.md
 geta-ai-tech-spec.docx
 pnpm-lock.yaml
-packages/db/src/generated/

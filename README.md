@@ -15,48 +15,50 @@ Ask in any language. Krishna responds in yours.
 | Layer | Tech |
 |-------|------|
 | Frontend | Next.js 14 (App Router), Tailwind CSS, Zustand |
-| Backend | Express.js, Zod, JWT auth, SSE streaming |
+| Backend | FastAPI, Pydantic, JWT auth, SSE streaming |
 | LLM | GPT-4o-mini via OpenRouter |
 | Embeddings | text-embedding-3-small (OpenAI) |
 | Vector DB | Qdrant |
-| Database | PostgreSQL + Prisma 7 |
+| Database | PostgreSQL + SQLAlchemy 2 + Alembic |
 | Ingestion | Python script for shloka embedding & upsert |
-| Monorepo | Turborepo + pnpm workspaces |
+| Monorepo | Turborepo + Bun workspaces |
 
 ## Project Structure
 
 ```
 geta-ai-rag-app/
 ├── apps/
-│   ├── api/          # Express backend — auth, chat, RAG orchestration
+│   ├── api/          # FastAPI backend — auth, chat, RAG orchestration
 │   └── web/          # Next.js frontend — chat UI, auth pages
 ├── packages/
-│   ├── db/           # Prisma schema, migrations, client
 │   ├── types/        # Shared TypeScript interfaces
 │   └── config/       # Shared tsconfig presets
-├── ingest/           # Python script to embed Gita shlokas into Qdrant
-└── docker-compose.yml
+└── ingest/           # Python script to embed Gita shlokas into Qdrant
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 20+, pnpm, Python 3.10+
-- Docker (for Postgres & Qdrant)
+- Bun, Node.js 20+, Python 3.12+, and `uv`
+- A running PostgreSQL instance
+- A running Qdrant instance
 
 ### Setup
 
 ```bash
-# Start local databases
-docker compose up -d
+# Install frontend/workspace dependencies
+bun install
 
-# Install dependencies
-pnpm install
+# Install backend dependencies
+cd apps/api
+uv sync
 
-# Generate Prisma client & push schema
-pnpm db:generate
-pnpm db:push
+# Run database migrations
+uv run alembic upgrade head
+
+# Return to repo root
+cd ../..
 
 # Set up environment variables
 cp .env.example apps/api/.env
@@ -70,7 +72,8 @@ python ingest.py
 
 # Start dev servers
 cd ..
-pnpm dev
+bun run dev
+bun run api:dev
 ```
 
 The frontend runs on `http://localhost:3000` and the API on `http://localhost:4000`.

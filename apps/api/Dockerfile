@@ -1,48 +1,24 @@
-FROM node:20-alpine AS builder
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    PORT=8080
 
 WORKDIR /app
 
-RUN npm install -g turbo
+COPY --from=ghcr.io/astral-sh/uv:0.8.17 /uv /uvx /bin/
 
-COPY package.json ./
-COPY turbo.json ./
+COPY pyproject.toml uv.lock .python-version ./
+RUN uv sync --frozen --no-dev
 
-COPY apps/api/package.json ./apps/api/package.json
-COPY packages/db/package.json ./packages/db/package.json
-COPY packages/types/package.json ./packages/types/package.json
-COPY packages/config/package.json ./packages/config/package.json
+COPY app ./app
+COPY alembic.ini ./alembic.ini
+COPY alembic ./alembic
 
-RUN npm install
+EXPOSE 8080
 
-COPY apps/api/ ./apps/api/
-COPY packages/ ./packages/
-
-RUN cd packages/db && npx prisma generate
-
-RUN turbo run build --filter=@geta/api
-
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-COPY package.json ./
-COPY turbo.json ./
-COPY apps/api/package.json ./apps/api/package.json
-COPY packages/db/package.json ./packages/db/package.json
-COPY packages/types/package.json ./packages/types/package.json
-COPY packages/config/package.json ./packages/config/package.json
-
-RUN npm install --omit=dev
-
-COPY --from=builder /app/apps/api/dist ./apps/api/dist
-COPY --from=builder /app/packages/db/prisma ./packages/db/prisma
-COPY --from=builder /app/packages/db/prisma.config.ts ./packages/db/prisma.config.ts
-COPY --from=builder /app/packages/db/src/generated ./packages/db/src/generated
-
-RUN cd packages/db && npx prisma generate
-
-EXPOSE 4000
-
-CMD ["sh", "-c", "cd packages/db && npx prisma migrate deploy && cd /app && node apps/api/dist/index.js"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

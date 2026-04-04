@@ -21,9 +21,9 @@ from qdrant_client.models import Distance, VectorParams, PointStruct
 load_dotenv()
 
 OPENROUTER_API_KEY = os.environ["OPENROUTER_API_KEY"]
-OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
-QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
-QDRANT_API_KEY = os.getenv("QDRANT_API_KEY") or None
+OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL")
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 COLLECTION = os.getenv("QDRANT_COLLECTION", "gita_shlokas")
 DATA_DIR = os.getenv("GITA_DATA_DIR", "./data/bhagavad-gita")
 EMBED_MODEL = "text-embedding-3-small"
@@ -36,7 +36,13 @@ openai_client = OpenAI(
     default_headers={"HTTP-Referer": "https://geta-ai.app", "X-Title": "Geta-AI Ingest"},
 )
 
-qdrant = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
+qdrant = QdrantClient(
+    url=QDRANT_URL,
+    api_key=QDRANT_API_KEY,
+    check_compatibility=False,
+    prefer_grpc=False,
+    https=True,
+)
 
 
 def load_shlokas():

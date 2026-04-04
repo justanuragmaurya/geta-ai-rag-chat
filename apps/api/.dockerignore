@@ -1,5 +1,10 @@
-node_modules
-dist
+.venv
+__pycache__
+*.pyc
+*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
 .env
 .env.*
-*.log
+.DS_Store
