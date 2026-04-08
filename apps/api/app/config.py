@@ -36,6 +36,16 @@ class Settings(BaseSettings):
         return self.database_url
 
     @property
+    def cors_allow_origins(self) -> list[str]:
+        """Browser origins allowed for CORS (credentials + API calls)."""
+        urls = [
+            self.frontend_url,
+            "https://geta-ai.anuragmaurya.com",
+            "https://geta-ai-rag-chat-web.vercel.app",
+        ]
+        return list(dict.fromkeys(urls))
+
+    @property
     def sync_database_url(self) -> str:
         if self.database_url.startswith("postgresql+psycopg://"):
             return self.database_url
